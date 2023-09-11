@@ -16,7 +16,7 @@ def runTSDetect(ts_detector_input):
 def main():
     output_dir = './output'
     dataset_path = './pr-data.csv'
-    repositories_path = '../repositories'
+    repositories_path = './repositories'
 
     repositories_error_path = f'{output_dir}/repositories_error.json'
     extraction_errors_path = f'{output_dir}/extraction_errors.json'
