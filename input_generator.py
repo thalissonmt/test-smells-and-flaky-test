@@ -90,6 +90,18 @@ def getPath(data: list, repository_path: str, sha: str, type: TestType):
         return ''
 
 
+def isDuplicate(path: str, project_name: str, ts_detector_input: list) -> bool:
+    path_handled = path.rsplit('_', 1)[0]
+    for row in ts_detector_input:
+        project_name_found = row[0]
+        path_found = row[1]
+        path_found_handled = path_found.rsplit('_', 1)[0]
+        if project_name == project_name_found and path_handled == path_found_handled:
+            return True
+
+    return False
+
+
 def generateTsDetectorInput(dataset_path, repositories_path, input_fix_path, input_flakiness_path):
     Utils.createFolder(output_fixes_path)
     Utils.createFolder(output_flakiness_path)
@@ -108,12 +120,13 @@ def generateTsDetectorInput(dataset_path, repositories_path, input_fix_path, inp
             url = row[0]
             fix_sha = row[7]
             repo_path = Utils.getRepositoryPathFromGitUrl(repositories_path, url)
+            project_name = repo_path.removeprefix(f'{repositories_path}/')
 
             fix_path = getPath(row, repo_path, fix_sha, TestType.FIX)
             if not fix_path:
                 continue
             fix_path = os.path.abspath(fix_path)
-            if any(fix_path in path for path in ts_detector_input_fix):
+            if isDuplicate(fix_path, project_name, ts_detector_input_fix):
                 continue
 
             flakiness_path = getPath(row, repo_path, fix_sha, TestType.FLAKINESS)
@@ -121,7 +134,6 @@ def generateTsDetectorInput(dataset_path, repositories_path, input_fix_path, inp
                 continue
             flakiness_path = os.path.abspath(flakiness_path)
 
-            project_name = repo_path.removeprefix(f'{repositories_path}/')
             ts_detector_input_fix.append([project_name, fix_path])
             ts_detector_input_flakiness.append([project_name, flakiness_path])
 
